@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Conversation</title>
+</head>
+<body>
+    <div style="overflow-y: scroll; height:400px;" id="messages">
+        <p>Waiting for connection...</p>
+    </div>
+    <input id="input" type='text'>
+    <button id="send" disabled>Send</button>
+</body>
+<script src="jem.js"></script>
+<script>
+    var socket = new WebSocket('ws://localhost:8080/connect');
+    var messages = document.getElementById("messages");
+    var button = document.getElementById("send");
+    var input = document.getElementById("input");
+
+    var my_pid = null;
+    var to_pid = null;
+
+    var timer = setInterval(function() {
+        send("here");
+    }, 55 * 1000);
+
+    socket.onopen = function() {
+        console.log('connected');
+    };
+
+    button.onclick = function() {
+        send(Inaka.Jem.encode(["to", to_pid, input.value]));
+    };
+
+    function send(data){
+        console.log("Send data: " + data);
+        socket.send(data);
+    }
+
+    function onUsersReceive(data){
+        console.log(data);
+        if (data[1] === "empty")
+            addToConversation("Server: waiting for someone...");
+        else if (to_pid === null){
+            to_pid = data[1];
+            button.disabled = false;
+            send(Inaka.Jem.encode(["hi", to_pid]));
+            addToConversation("Server: connected!");
+        }
+    }
+
+    socket.onmessage = function(ev){
+        var arrayBuffer;
+        var fileReader = new FileReader();
+        fileReader.onload = function(event) {
+            arrayBuffer = event.target.result;
+            var my_array = Inaka.Jem.decode(arrayBuffer);
+            if (my_array[0] === "ok")
+                console.log(my_array);
+            else if (my_array[0] === "users")
+                onUsersReceive(my_array);
+            else if (my_array[0] === "error")
+                console.log(my_array[2]);
+            else if (my_array[0] === "to"){
+                console.log(my_array);
+                addToConversation("Me: " + my_array[2]);
+            }
+            else if (my_array[0] === "from") {
+                console.log(my_array);
+                addToConversation("Interlocutor: " + my_array[2]);
+            } else if (my_array[0] === "my_pid")
+                my_pid = my_array[1];
+            else {
+                console.log("ERROR: Can handle such message!!!!");
+                console.log(my_array);
+            }
+        };
+        fileReader.readAsArrayBuffer(ev.data);
+    };
+
+    socket.onclose = function() {
+        clearInterval(timer);
+        alert("Connection closed...");
+    };
+
+    function addToConversation(message) {
+        var p = document.createElement("p");
+        p.innerHTML = message;
+        messages.insertBefore(p, messages.lastChild);
+    }
+
+</script>
+</html>
