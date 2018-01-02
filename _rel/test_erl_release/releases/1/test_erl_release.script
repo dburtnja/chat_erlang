@@ -1,5 +1,5 @@
 %% coding: utf-8
-%% script generated at {2017,12,29} {11,23,31}
+%% script generated at {2018,1,2} {14,56,4}
 {script,
     {"test_erl_release","1"},
     [{preLoaded,
@@ -82,7 +82,7 @@
           cowboy_websocket]},
      {path,["$ROOT/lib/test_erl-0.1.0/ebin"]},
      {primLoad,
-         [http_handler,logins_handler,my_handler,reg,test_erl_app,
+         [chanel_chat,http_handler,logins_handler,my_handler,reg,test_erl_app,
           test_erl_sup]},
      {path,["$ROOT/lib/sasl-3.1.1/ebin"]},
      {primLoad,
@@ -305,8 +305,8 @@
                    {vsn,"0.1.0"},
                    {id,[]},
                    {modules,
-                       [http_handler,logins_handler,my_handler,reg,
-                        test_erl_app,test_erl_sup]},
+                       [chanel_chat,http_handler,logins_handler,my_handler,
+                        reg,test_erl_app,test_erl_sup]},
                    {registered,[test_erl_sup]},
                    {applications,[kernel,stdlib,cowboy]},
                    {included_applications,[]},

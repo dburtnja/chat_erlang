@@ -5,11 +5,77 @@
     <title>Chanel</title>
 </head>
 <body>
-
+    <p id="name">Anonym</p>
+    <div style="overflow-y: scroll; height:400px;" id="messages">
+    </div>
+    <input id="input" type='text'>
+    <button id="send">Send</button>
 </body>
+<script src="jem.js"></script>
 <script>
+    var current_url = new URL(window.location.href);
+    var my_name = document.getElementById("name");
+    my_name.innerText = current_url.searchParams.get("name");
+    var input = document.getElementById("input");
     var socket = new WebSocket('ws://localhost:8080/chanel_chat');
+    var messages = document.getElementById("messages");
+    var button = document.getElementById("send");
 
-    socket.onopen
+
+    var timer = setInterval(function() {
+        send("here");
+    }, 55 * 1000);
+
+    socket.onopen = function() {
+        console.log('connected');
+    };
+
+    button.onclick = function() {
+        send(Inaka.Jem.encode(["msg", my_name.innerText, input.value]));
+    };
+
+    function send(data){
+        console.log("Send data: " + data);
+        socket.send(data);
+    }
+
+    function onUsersReceive(data){
+        console.log(data);
+        if (data[1] === "me")
+            addToConversation("Me: " + data[2]);
+        else
+            addToConversation(data[1] + ": " + data[2]);
+    }
+
+    socket.onmessage = function(ev){
+        var arrayBuffer;
+        var fileReader = new FileReader();
+        fileReader.onload = function(event) {
+            arrayBuffer = event.target.result;
+            var my_array = Inaka.Jem.decode(arrayBuffer);
+            if (my_array === "ok")
+                console.log(my_array);
+            else if (my_array[0] === "msg")
+                onUsersReceive(my_array);
+            else if (my_array[0] === "error")
+                console.log(my_array[2]);
+            else {
+                console.log("ERROR: Can handle such message!!!!");
+                console.log(my_array);
+            }
+        };
+        fileReader.readAsArrayBuffer(ev.data);
+    };
+
+    socket.onclose = function() {
+        clearInterval(timer);
+        window.history.back();
+    };
+
+    function addToConversation(message) {
+        var p = document.createElement("p");
+        p.innerHTML = message;
+        messages.insertBefore(p, messages.lastChild);
+    }
 </script>
 </html>

@@ -17,13 +17,20 @@ websocket_init(State) ->
 websocket_handle({text, <<"here">>}, State) ->
 	{reply, {binary, term_to_binary("ok")}, State};
 websocket_handle({binary, Data}, State) ->
-	{msg, Msg} = binary_to_term(Data),
-	chat ! {self(), foreach, fun(E) -> E ! Msg end},
+	[<<"msg">>, Name, Msg] = binary_to_term(Data),
+	My_pid = self(),
+	chat ! {self(), foreach, fun(E) -> E ! {My_pid, Name, Msg} end},
 	{ok, State};
 websocket_handle(_Frame, State) ->
 	{ok, State}.
 
 websocket_info(Data, State) ->
-	Reply = {binary, term_to_binary(Data)},
+	MyPid = self(),
+	io:fwrite("self=~w   data=~w~n", [MyPid, Data]),
+	Reply = case Data of
+						{MyPid, _, Msg} ->
+							{binary, term_to_binary({msg, me, Msg})};
+						{_, Name, Msg} ->
+							{binary, term_to_binary({msg, Name, Msg})}
+					end,
 	{reply, Reply, State}.
-
