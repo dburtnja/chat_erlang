@@ -32,8 +32,14 @@ loop(Reg) ->
       Rest = get_processing(Sender, List),
       loop(Rest);
     {Sender, all} ->
-      Sender ! {users, Reg},
-      loop(Reg)
+      Fun = fun(E) -> is_process_alive(E) end,
+      List = lists:filter(Fun, Reg),
+      Sender ! {users, List},
+      loop(List);
+    {Sender, foreach, Fun} ->
+      List = lists:filter(fun(E) -> is_process_alive(E) end, Reg),
+      lists:foreach(Fun, List),
+      loop(List)
   end.
 
 get_processing(Sender, []) ->

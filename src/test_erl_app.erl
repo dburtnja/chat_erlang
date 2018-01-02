@@ -11,6 +11,7 @@ start(_Type, _Args) ->
 			[
 				{"/", cowboy_static, {priv_file, test_erl, "static/index.html"}},
 				{"/connect", my_handler, []},
+				{"/chanel_chat", chanel_chat, []},
 				{"/[...]", cowboy_static, {priv_dir, test_erl, "static/"}}
 			]
 		}
