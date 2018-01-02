@@ -26,7 +26,6 @@ websocket_handle(_Frame, State) ->
 
 websocket_info(Data, State) ->
 	MyPid = self(),
-	io:fwrite("self=~w   data=~w~n", [MyPid, Data]),
 	Reply = case Data of
 						{MyPid, _, Msg} ->
 							{binary, term_to_binary({msg, me, Msg})};
